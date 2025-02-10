@@ -2,24 +2,21 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { loginUser } from "@/lib/actions/user.actions";
 
-export const handler = NextAuth({
+const authHandler = NextAuth({
   providers: [
     CredentialsProvider({
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
-      } as any,
+      },
       async authorize(credentials) {
         if (credentials?.email && credentials?.password) {
           const user = await loginUser(credentials.email, credentials.password);
           if (user) {
             return user;
-          } else {
-            return null;
           }
         }
-
         return null;
       },
     }),
@@ -45,4 +42,6 @@ export const handler = NextAuth({
   secret: process.env.NEXTAUTH_SECRET,
 });
 
-export { handler as GET, handler as POST };
+
+export const GET = async (req: Request, context: any) => authHandler(req, context);
+export const POST = async (req: Request, context: any) => authHandler(req, context);

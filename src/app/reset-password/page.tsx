@@ -1,21 +1,22 @@
 "use client";
+
 import React, { useState } from "react";
 import Link from "next/link";
 import { LoaderCircle, LockIcon } from "lucide-react";
 import DefaultLayout from "@/components/layout/DefaultLayout";
 import Breadcrumb from "@/components/componentHeader/ComponentHeader";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { resetPassword } from "@/lib/actions/user.actions";
 
-const ResetPasswordPage: React.FC = () => {
+const ResetPasswordPage = ({ params }: { params: { token: string } }) => {
+  const { token } = params;
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +36,13 @@ const ResetPasswordPage: React.FC = () => {
     }
 
     try {
-      await resetPassword(token as string, password);
+      if (!token) {
+        setError("Invalid token.");
+        setIsLoading(false);
+        return;
+      }
+
+      await resetPassword(token, password);
 
       setSuccess(true);
       setTimeout(() => {
@@ -48,6 +55,16 @@ const ResetPasswordPage: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+  if (!token) {
+    return (
+      <DefaultLayout>
+        <div className="text-center text-red-500">
+          Token is missing or invalid. Please try resetting your password again.
+        </div>
+      </DefaultLayout>
+    );
+  }
 
   return (
     <DefaultLayout>
